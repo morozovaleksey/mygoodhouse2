@@ -141,7 +141,7 @@
 
                   <div class="add-to-box">
                     <p>Заказать легко! Просто сообщите нам нужное количество, сроки и адрес доставки.</p>
-                    <a class="btn btn-default" href="javascript:%24zopim.livechat.window.show();"><i class="fa fa-shopping-cart"></i>
+                    <a class="btn btn-default" id="orderButton" href="#"><i class="fa fa-shopping-cart"></i>
                       <span>Разместить заказ</span></a>
                     <a class="btn btn-default" href="javascript:void(0);" onclick="ZCallbackWidget.showCallback();return false;"><i class="fa fa-phone"></i>
                       <span>Консультация</span></a>
@@ -245,11 +245,39 @@
         <h4 class="modal-title" id="myModalLabel">Заказать</h4>
       </div>
       <div class="modal-body">
-        ...
+        <form>
+          <div class="form-group">
+            <label >Название товара:</label>  <label ><?php echo $heading_title; ?></label>
+            <input type="hidden" name="orderNameProduct" value="<?php echo $heading_title; ?>">
+          </div>
+          <div class="form-group">
+            <label >Артикул товара:</label>  <label ><?php echo $sku; ?></label>
+            <input type="hidden" name="orderArticulProduct" value="<?php echo $sku; ?>">
+          </div>
+          <div class="form-group">
+            <label >Имя:</label>
+            <input type="text" name="orderNameCustomer" class="form-control" id="">
+          </div>
+          <div class="form-group">
+            <label >Телефон:</label>
+            <input type="text" name="orderPhone" class="form-control" id="">
+          </div>
+          <div class="form-group">
+            <label>Email:</label>
+            <input type="email" name="orderEmail" class="form-control" id="">
+          </div>
+          <div class="form-group">
+            <label for="comment">Комментарий:</label>
+            <textarea class="form-control" name="orderComment" rows="5"></textarea>
+          </div>
+
+
+
+        </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
-        <button type="button" class="btn btn-primary">Заказать</button>
+        <button type="button" class="btn btn-default">Заказать</button>
       </div>
     </div>
   </div>

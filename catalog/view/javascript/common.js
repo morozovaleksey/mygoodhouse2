@@ -24,6 +24,12 @@ function getURLVar(key) {
 
 $(document).ready(function() {
 	// Highlight any found errors
+
+	$('#orderButton').click(function(e) {
+		e.preventDefault();
+		$('#orderModal').modal();
+	});
+
 	$('.text-danger').each(function() {
 		var element = $(this).parent().parent();
 

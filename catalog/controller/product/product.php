@@ -306,6 +306,7 @@ class ControllerProductProduct extends Controller {
 			$data['manufacturer'] = $product_info['manufacturer'];
 			$data['manufacturers'] = $this->url->link('product/manufacturer/info', 'manufacturer_id=' . $product_info['manufacturer_id']);
 			$data['model'] = $product_info['model'];
+			$data['sku'] = $product_info['sku'];
 			$data['reward'] = $product_info['reward'];
 			$data['points'] = $product_info['points'];
 
@@ -590,6 +591,7 @@ class ControllerProductProduct extends Controller {
 				}
 			}
 			else {
+
 				if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/product/product.tpl')) {
 					$this->response->setOutput($this->load->view($this->config->get('config_template') . '/template/product/product.tpl', $data));
 				} else {
