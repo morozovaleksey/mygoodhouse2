@@ -56,7 +56,7 @@
 
 
 <script defer type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5743e4857ad1e613"></script>
-<script src="http://maps.google.com/maps/api/js?sensor=false&libraries=geometry&v=3.22&key=AIzaSyBWUuwUH-eitrLNSklH1xnsYtZcR1Vv8xQ"></script>
+<script src="http://maps.google.com/maps/api/js?sensor=false&libraries=geometry&v=3.22&key=AIzaSyDxEsHq9WhXEBg4cPejxuNiRwuufC4jPqs"></script>
 <script type='text/javascript'>
 
   $(document).ready(function () {

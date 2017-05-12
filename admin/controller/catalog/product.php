@@ -953,6 +953,13 @@ class ControllerCatalogProduct extends Controller {
 		} else {
 			$data['price'] = '';
 		}
+		if (isset($this->request->post['price2'])) {
+			$data['price2'] = $this->request->post['price2'];
+		} elseif (!empty($product_info)) {
+			$data['price2'] = $product_info['price2'];
+		} else {
+			$data['price2'] = '';
+		}
 
 		$this->load->model('catalog/recurring');
 

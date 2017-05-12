@@ -32,6 +32,7 @@ class ModelCatalogProduct extends Model {
 				'manufacturer_id'  => $query->row['manufacturer_id'],
 				'manufacturer'     => $query->row['manufacturer'],
 				'price'            => ($query->row['discount'] ? $query->row['discount'] : $query->row['price']),
+				'price2'            => ($query->row['discount'] ? $query->row['discount'] : $query->row['price2']),
 				'special'          => $query->row['special'],
 				'reward'           => $query->row['reward'],
 				'points'           => $query->row['points'],
@@ -189,6 +190,7 @@ class ModelCatalogProduct extends Model {
 		}
 
 		$product_data = array();
+
 
 		$query = $this->db->query($sql);
 

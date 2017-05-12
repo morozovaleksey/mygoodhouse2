@@ -220,7 +220,11 @@ class ControllerProductCategory extends Controller {
 			}
 
 			$data['products'] = array();
+			if($category_id == 92 or $category_info['parent_id']==92) {
+				$sort = 'p.date_available';
+				$order = 'DESC';
 
+			}
 			$filter_data = array(
 				'filter_category_id' => $category_id,
 				'filter_filter'      => $filter,
@@ -229,6 +233,7 @@ class ControllerProductCategory extends Controller {
 				'start'              => ($page - 1) * $limit,
 				'limit'              => $limit
 			);
+
 
 
   		// OCFilter start
@@ -251,6 +256,11 @@ class ControllerProductCategory extends Controller {
 				} else {
 					$price = false;
 				}
+				if (($this->config->get('config_customer_price') && $this->customer->isLogged()) || !$this->config->get('config_customer_price')) {
+					$price2 = $this->currency->format($this->tax->calculate($result['price2'], $result['tax_class_id'], $this->config->get('config_tax')));
+				} else {
+					$price2 = false;
+				}
 
 				if ((float)$result['special']) {
 					$special = $this->currency->format($this->tax->calculate($result['special'], $result['tax_class_id'], $this->config->get('config_tax')));
@@ -269,25 +279,46 @@ class ControllerProductCategory extends Controller {
 				} else {
 					$rating = false;
 				}
+				$currentCat = $this->model_catalog_category->getCategoryName($result['product_id']);
+				$category_info_product = $this->model_catalog_category->getCategory($currentCat['category_id']);
+				$attribute_groups = $this->model_catalog_product->getProductAttributes($result['product_id']);
+				if($attribute_groups) {
+					$attributes = $attribute_groups[0]['attribute'];
+				}
+				else {
+					$attributes='';
+				}
+				if($category_id == 92 or $category_info_product['parent_id'] == 92) {
+
+					if ($result['image']) {
+						$image = $this->model_tool_image->resize($result['image'], 400, 225);
+					} else {
+						$image = $this->model_tool_image->resize('placeholder.png', $this->config->get('config_image_product_width'), $this->config->get('config_image_product_height'));
+					}
+				}
 
 				$data['products'][] = array(
 					'product_id'  => $result['product_id'],
-					'category'    => $this->model_catalog_category->getCategoryName($result['product_id']),
+					'category'    => $currentCat,
+					'category_href'    => $this->url->link('product/category', 'path=' . $currentCat['category_id']),
+					'attributes'  => $attributes,
 					'thumb'       => $image,
 					'name'        => $result['name'],
 					'description' => utf8_substr(strip_tags(html_entity_decode($result['description'], ENT_QUOTES, 'UTF-8')), 0, $this->config->get('config_product_description_length')) . '..',
 					'short_description' => utf8_substr(strip_tags(html_entity_decode($result['short_description'], ENT_QUOTES, 'UTF-8')), 0, 300) . '..',
 					'price'       => $price,
+					'price2'       => $price2, 
 					'special'     => $special,
-					'date_available'     => $result['date_available'],
+					'date_available'     => date($this->language->get('date_format_short'), strtotime($result['date_available'])),
 					'tax'         => $tax,
 					'minimum'     => $result['minimum'] > 0 ? $result['minimum'] : 1,
 					'rating'      => $result['rating'],
 					'href'        => $this->url->link('product/product', 'path=' . $this->request->get['path'] . '&product_id=' . $result['product_id'] . $url)
 				);
 			}
-			print_r($data['products']);
+
 			$url = '';
+
 
 			$category_manufactures = $this->model_catalog_category->getManufacturersByCategory($category_id);
 
@@ -557,13 +588,40 @@ class ControllerProductCategory extends Controller {
 
 				$data['blogs'] = array();
 				$blogs_categories = $this->model_catalog_category->getCategories(92);
+
 				foreach($blogs_categories as $blog_category) {
+					$filter_data_blog = array(
+						'filter_category_id'  => $blog_category['category_id'],
+						'filter_sub_category' => true
+					);
+
 					$data['blogs'][] = array(
-						'name'     => $blog_category['name'],
+						'name'     => $blog_category['name'] .  ' (' . $this->model_catalog_product->getTotalProducts($filter_data_blog) . ')',
 						'column'   => $blog_category['column'] ? $blog_category['column'] : 1,
 						'href'     => $this->url->link('product/category', 'path=' . $blog_category['category_id'])
 					);
 				}
+				$filter_data_recent_blog = array(
+					'filter_category_id' => 92,
+					'filter_filter'      => '',
+					'sort'               => 'p.date_available',
+					'order'              => 'DESC',
+					'start'              => 0,
+					'limit'              => 5
+				);
+
+				$data['products_recent_blog'] = array();
+				$products_recent_blog = $this->model_catalog_product->getProducts($filter_data_recent_blog);
+
+				foreach($products_recent_blog as $product_recent_blog ) {
+					$data['products_recent_blog'][] = array(
+						'product_id'  => $product_recent_blog['product_id'],
+						'name'        => $product_recent_blog['name'],
+						'date_available'     => date($this->language->get('date_format_short'), strtotime($product_recent_blog['date_available'])),
+						'href'        => $this->url->link('product/product', 'path=' . $this->request->get['path'] . '&product_id=' . $product_recent_blog['product_id'])
+					);
+				}
+
 				if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/product/category_blog.tpl')) {
 					$this->response->setOutput($this->load->view($this->config->get('config_template') . '/template/product/category_blog.tpl', $data));
 				} else {

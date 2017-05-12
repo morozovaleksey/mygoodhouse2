@@ -113,7 +113,10 @@
                           <span class="product_photo bordered_wht_border"><img itemprop="image" alt="<?php echo $product['name'] ?>" src="<?php echo $product['thumb']; ?>"></span>
                           <span class="product_title" itemprop="name" title="Футуро серый"><?php echo $product['name'] ?></span>
                             <span class="product_price" itemprop="price" itemscope="" itemtype="https://schema.org/Offer">
-                              <?php echo $product['price']; ?>
+                              Цена за кв.м.: <?php echo $product['price']; ?>
+                            </span>
+                            <span class="product_price" itemprop="price" itemscope="" itemtype="https://schema.org/Offer">
+                              Цена за шт.: <?php if($product['price2'] == '0 р.') { echo 'Под заказ'; } else { echo $product['price2']; } ?>
                             </span>
                           <!--span class="sale">Sale</span>
                           <span class="new">New</span-->

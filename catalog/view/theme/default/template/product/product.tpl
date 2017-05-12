@@ -110,12 +110,23 @@
                         <div data-hook="product_price">
                           <div id="product-price" class="price-box">
                             <h3 class="product-section-title">
-                              <small>Цена:</small>
+                              <small>Цена за кв.м.:</small>
                             </h3>
                             <div>
-            <span class="lead price selling special-price" itemprop="price">
-              <?php echo $price; ?>
-            </span>
+                              <span class="lead price selling special-price" itemprop="price">
+                                <?php if($price == '0 р.') { echo 'Под заказ'; } else { echo $price; } ?>
+                              </span>
+
+                              <span itemprop="priceCurrency" content="RUB"></span>
+                            </div>
+                            <h3 class="product-section-title">
+                              <small>Цена за шт.:</small>
+                            </h3>
+                            <div>
+                              <span class="lead price selling special-price" itemprop="price">
+                                 <?php if($price2 == '0 р.') { echo 'Под заказ'; } else { echo $price2; } ?>
+                              </span>
+
                               <span itemprop="priceCurrency" content="RUB"></span>
                             </div>
 
@@ -134,6 +145,11 @@
                       <span>Разместить заказ</span></a>
                     <a class="btn btn-default" href="javascript:void(0);" onclick="ZCallbackWidget.showCallback();return false;"><i class="fa fa-phone"></i>
                       <span>Консультация</span></a>
+                    <!-- Button trigger modal -->
+
+
+                    <!-- Modal -->
+
                   </div>
 
 
@@ -217,6 +233,23 @@
 
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="orderModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Заказать</h4>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+        <button type="button" class="btn btn-primary">Заказать</button>
       </div>
     </div>
   </div>
