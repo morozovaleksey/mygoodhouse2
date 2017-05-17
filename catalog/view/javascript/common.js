@@ -29,6 +29,79 @@ $(document).ready(function() {
 		e.preventDefault();
 		$('#orderModal').modal();
 	});
+	$('.btn-order-product').click(function(e) {
+		e.preventDefault();
+		$.ajax({
+			url: '/checkout',
+			type: 'post',
+			dataType: 'json',
+			data:  $("#order-product-form").serialize(),
+			success: function (json) {
+				var arrInput = ['orderCount','orderNameCustomer','orderPhone','orderEmail','orderComment'];
+				if (json['error']) {
+					console.log(json);
+					var errorLength = (json['error'].length)-1;
+
+					$.each(arrInput, function (index, value) {
+						addError = 0;
+						$.each(json['error'], function (key, error) {
+
+							if(value == error.name) {
+
+								addError = 1;
+
+							}
+
+
+						});
+
+						if(addError == 1) {
+							if(value=='orderComment') {
+								$('textarea[name="' + value + '"]').addClass('error');
+							}
+							else {
+								$('input[name="' + value + '"]').addClass('error');
+							}
+
+
+						}
+						else {
+							console.log(value);
+							if(value=='orderComment') {
+								$('textarea[name="' + value + '"]').removeClass('error');
+							}
+							else {
+								$('input[name="' + value + '"]').removeClass('error');
+							}
+						}
+
+
+					});
+
+
+
+
+				}
+				if (json['success']) {
+
+					$.each(arrInput, function (index, value) {
+						if(value=='orderComment') {
+							$('textarea[name="' + value + '"]').removeClass('error');
+						}
+						else {
+							$('input[name="' + value + '"]').removeClass('error');
+						}
+					});
+					$('.success_message').html("<b style='color:green;'> "  + json['success'] + "</b>");
+					$('input[name=\'orderNameCustomer\']').val('');
+					$('input[name=\'orderPhone\']').val('');
+					$('input[name=\'orderEmail\']').val('');
+					$('textarea[name=\'orderComment\']').val('');
+
+				}
+			}
+		});
+	});
 
 	$('.text-danger').each(function() {
 		var element = $(this).parent().parent();

@@ -1,98 +1,316 @@
 <?php
 class ControllerCheckoutCheckout extends Controller {
 	public function index() {
-		// Validate cart has products and has stock.
-		if ((!$this->cart->hasProducts() && empty($this->session->data['vouchers'])) || (!$this->cart->hasStock() && !$this->config->get('config_stock_checkout'))) {
-			$this->response->redirect($this->url->link('checkout/cart'));
+		function filter($post){
+			return htmlspecialchars(trim($post));
+		}
+		$json = array();
+		$this->load->model('localisation/currency');
+		$results_currency = $this->model_localisation_currency->getCurrencies();
+		$orderNameProduct = $_POST['orderNameProduct'];
+		$orderIdProduct = $_POST['orderIdProduct'];
+		$orderCount = $_POST['orderCount'];
+		$orderPriceProductEur = $_POST['orderPriceProductEur'];
+		$orderPriceProduct = $_POST['orderPriceProduct'];
+		$orderArticulProduct = $_POST['orderArticulProduct'];
+		$orderNameCustomer = $_POST['orderNameCustomer'];
+		$orderPhone = $_POST['orderPhone'];
+		$orderEmail = $_POST['orderEmail'];
+		$orderComment = $_POST['orderComment'];
+
+
+		$orderNameProduct = filter($orderNameProduct);
+		$orderIdProduct = filter($orderIdProduct);
+		$orderCount = filter($orderCount);
+		$orderPriceProduct = filter($orderPriceProduct);
+
+		$orderPriceProductEur = filter($orderPriceProductEur);
+
+
+		$orderArticulProduct = filter($orderArticulProduct);
+		$orderNameCustomer = filter($orderNameCustomer);
+		$orderPhone = filter($orderPhone);
+		$orderEmail = filter($orderEmail);
+		$orderComment = filter($orderComment);
+
+		$orderTotals = $this->currency->format($orderPriceProductEur*$orderCount + ($this->config->get('config_tax') ? ($this->config->get('config_tax') * $orderCount) : 0), 'RUB',  $results_currency['RUB']['value']);
+
+
+		if ($orderCount < 1) {
+			$json['error'][] = array('name'=>'orderCount','error'=>'Количество должно быть больше 0');
 		}
 
-		// Validate minimum quantity requirements.
-		$products = $this->cart->getProducts();
+		if ((utf8_strlen($orderNameCustomer) < 3) || (utf8_strlen($orderNameCustomer) > 25)) {
+			$json['error'][] = array('name'=>'orderNameCustomer','error'=>'Имя должно быть от 3 до 25 символов!');
 
-		foreach ($products as $product) {
-			$product_total = 0;
+		}
 
-			foreach ($products as $product_2) {
-				if ($product_2['product_id'] == $product['product_id']) {
-					$product_total += $product_2['quantity'];
+		if ((utf8_strlen($orderPhone) < 1)) {
+			$json['error'][] = array('name'=>'orderPhone','error'=>'Телефон не должен быть пустым');
+
+		}
+
+		if (!preg_match("|^[-0-9a-z_\.]+@[-0-9a-z_^\.]+\.[a-z]{2,6}$|i", $orderEmail)) {
+			$json['error'][] = array('name' => 'orderEmail', 'error' => 'Не правильно введено поле Email');
+		}
+
+		if ((utf8_strlen($orderComment) > 3000)) {
+			$json['error'][] = array('name'=>'orderComment','error'=>'Комментарий не должен быть слишком длинным');
+
+		}
+
+
+		if (!isset($json['error'])) {
+
+			// Validate cart has products and has stock.
+			$this->load->model('checkout/order');
+
+			$order_data = array();
+
+			$this->load->model('extension/extension');
+
+
+			$this->load->language('checkout/checkout');
+
+			$order_data['invoice_prefix'] = $this->config->get('config_invoice_prefix');
+			$order_data['store_id'] = $this->config->get('config_store_id');
+			$order_data['store_name'] = $this->config->get('config_name');
+
+			if ($order_data['store_id']) {
+				$order_data['store_url'] = $this->config->get('config_url');
+			} else {
+				$order_data['store_url'] = HTTP_SERVER;
+			}
+
+
+			$order_data['customer_id'] = 0;
+			$order_data['customer_group_id'] = 1;
+			$order_data['firstname'] = $orderNameCustomer;
+			$order_data['lastname'] = $orderNameCustomer;
+			$order_data['email'] = $orderEmail;
+			$order_data['telephone'] = $orderPhone;
+			$order_data['fax'] = '';
+			$order_data['custom_field'] = '';
+
+
+			$order_data['payment_firstname'] = $orderNameCustomer;
+			$order_data['payment_lastname'] = $orderNameCustomer;
+			$order_data['payment_company'] = '';
+			$order_data['payment_address_1'] = 'Самовывоз';
+			$order_data['payment_address_2'] = '';
+			$order_data['payment_city'] = 'Самара';
+			$order_data['payment_postcode'] = '';
+			$order_data['payment_zone'] = 'Самарская область';
+			$order_data['payment_zone_id'] = '2781';
+			$order_data['payment_country'] = 'Российская Федерация';
+			$order_data['payment_country_id'] = 176;
+			$order_data['payment_address_format'] = '';
+			$order_data['payment_custom_field'] = (isset($this->session->data['payment_address']['custom_field']) ? $this->session->data['payment_address']['custom_field'] : array());
+
+			if (isset($this->session->data['payment_method']['title'])) {
+				$order_data['payment_method'] = $this->session->data['payment_method']['title'];
+			} else {
+				$order_data['payment_method'] = 'Оплата при получении';
+			}
+
+			if (isset($this->session->data['payment_method']['code'])) {
+				$order_data['payment_code'] = $this->session->data['payment_method']['code'];
+			} else {
+				$order_data['payment_code'] = 'cod';
+			}
+
+
+			$order_data['shipping_firstname'] = $orderNameCustomer;
+			$order_data['shipping_lastname'] = $orderNameCustomer;
+			$order_data['shipping_company'] = '';
+			$order_data['shipping_address_1'] = 'Самовывоз';
+			$order_data['shipping_address_2'] = '';
+			$order_data['shipping_city'] = 'Самара';
+			$order_data['shipping_postcode'] = '';
+			$order_data['shipping_zone'] = 'Самарская область';
+			$order_data['shipping_zone_id'] = '2781';
+			$order_data['shipping_country'] = 'Российская Федерация';
+			$order_data['shipping_country_id'] = '176';
+			$order_data['shipping_address_format'] = '';
+			$order_data['shipping_custom_field'] = array();
+			$order_data['shipping_method'] = 'Фиксированная стоимость доставки';
+			$order_data['shipping_code'] = 'flat.flat';
+
+
+			$order_data['products'] = array();
+
+
+			$order_data['products'][] = array(
+				'product_id' => $orderIdProduct,
+				'name' => $orderNameProduct,
+				'model' => $orderNameProduct,
+				'download' => '0',
+				'quantity' => $orderCount,
+				'subtract' => 1,
+				'price' => $orderPriceProductEur,
+				'total' => $orderPriceProductEur*$orderCount,
+				'tax' => '',
+				'reward' => ''
+			);
+
+
+			// Gift Voucher
+			$order_data['vouchers'] = array();
+
+			if (!empty($this->session->data['vouchers'])) {
+				foreach ($this->session->data['vouchers'] as $voucher) {
+					$order_data['vouchers'][] = array(
+						'description' => $voucher['description'],
+						'code' => token(10),
+						'to_name' => $voucher['to_name'],
+						'to_email' => $voucher['to_email'],
+						'from_name' => $voucher['from_name'],
+						'from_email' => $voucher['from_email'],
+						'voucher_theme_id' => $voucher['voucher_theme_id'],
+						'message' => $voucher['message'],
+						'amount' => $voucher['amount']
+					);
 				}
 			}
 
-			if ($product['minimum'] > $product_total) {
-				$this->response->redirect($this->url->link('checkout/cart'));
+			$order_data['comment'] = $orderComment;
+			$order_data['total'] = $orderPriceProductEur*$orderCount;
+
+			if (isset($this->request->cookie['tracking'])) {
+				$order_data['tracking'] = $this->request->cookie['tracking'];
+
+				$subtotal = $this->cart->getSubTotal();
+
+				// Affiliate
+				$this->load->model('affiliate/affiliate');
+
+				$affiliate_info = $this->model_affiliate_affiliate->getAffiliateByCode($this->request->cookie['tracking']);
+
+				if ($affiliate_info) {
+					$order_data['affiliate_id'] = $affiliate_info['affiliate_id'];
+					$order_data['commission'] = ($subtotal / 100) * $affiliate_info['commission'];
+				} else {
+					$order_data['affiliate_id'] = 0;
+					$order_data['commission'] = 0;
+				}
+
+				// Marketing
+				$this->load->model('checkout/marketing');
+
+				$marketing_info = $this->model_checkout_marketing->getMarketingByCode($this->request->cookie['tracking']);
+
+				if ($marketing_info) {
+					$order_data['marketing_id'] = $marketing_info['marketing_id'];
+				} else {
+					$order_data['marketing_id'] = 0;
+				}
+			} else {
+				$order_data['affiliate_id'] = 0;
+				$order_data['commission'] = 0;
+				$order_data['marketing_id'] = 0;
+				$order_data['tracking'] = '';
+			}
+
+			$order_data['language_id'] = $this->config->get('config_language_id');
+//			$order_data['currency_id'] = $this->currency->getId();
+//			$order_data['currency_code'] = $this->currency->getCode();
+//			$order_data['currency_value'] = $this->currency->getValue($this->currency->getCode());
+
+//
+			$order_data['currency_id'] = $results_currency['RUB']['currency_id'];
+			$order_data['currency_code'] = $results_currency['RUB']['code'];
+			$order_data['currency_value'] = $results_currency['RUB']['value'];
+
+			$order_data['ip'] = $this->request->server['REMOTE_ADDR'];
+
+			if (!empty($this->request->server['HTTP_X_FORWARDED_FOR'])) {
+				$order_data['forwarded_ip'] = $this->request->server['HTTP_X_FORWARDED_FOR'];
+			} elseif (!empty($this->request->server['HTTP_CLIENT_IP'])) {
+				$order_data['forwarded_ip'] = $this->request->server['HTTP_CLIENT_IP'];
+			} else {
+				$order_data['forwarded_ip'] = '';
+			}
+
+			if (isset($this->request->server['HTTP_USER_AGENT'])) {
+				$order_data['user_agent'] = $this->request->server['HTTP_USER_AGENT'];
+			} else {
+				$order_data['user_agent'] = '';
+			}
+
+			if (isset($this->request->server['HTTP_ACCEPT_LANGUAGE'])) {
+				$order_data['accept_language'] = $this->request->server['HTTP_ACCEPT_LANGUAGE'];
+			} else {
+				$order_data['accept_language'] = '';
+			}
+			$order_data['order_status_id'] = 1;
+
+
+			$orderNumber = $this->model_checkout_order->addOrder($order_data);
+			$json['success'] = 'Ваше сообщение успешно отправлено!';
+			//		print_r($_POST);
+			$to = "moraleksey.ya@yandex.ru";
+			$nameSite = $_SERVER['HTTP_HOST'];
+			$title = "Заказ с ".$nameSite;
+
+			$from='noreply@mygoodhouse2.fancymedia.ru';
+			$mess = "<body><b>Заказ с сайта </b>".$nameSite."<br />";
+			$mess .= "<br />";
+			$mess .= "<b>Данные заказа:</b><br /><br />";
+			$mess .= "Номер заказа: <br />" . $orderNumber . "<br /><br />";
+			$mess .= "Артикул: <br />" . $orderArticulProduct . "<br /><br />";
+			$mess .= "Товар: <br />" . $orderNameProduct . "<br /><br />";
+			$mess .= "Цена: <br />" . $orderPriceProduct . "<br /><br />";
+			$mess .= "Количесвто: <br />" . $orderCount . "<br /><br />";
+			$mess .= "E-mail: <br />" . $orderEmail . "<br /><br />";
+			$mess .= "Телефон: <br />" . $orderPhone . "<br /><br />";
+			$mess .= "ФИО: <br />" . $orderNameCustomer . "<br /><br />";
+			$mess .= "Комментарий: <br />" . $orderComment . "<br /><br />";
+			$mess .= "Итого: <br />" . $orderTotals . "<br /><br />";
+
+			$header="Content-type: text/html; charset=\"utf-8\"\n";
+			$header="From: ". $orderNameCustomer . "<" . $from . ">\n";
+			$header.="Subject: " . $title . "\n";
+			$header.="Content-type: text/html; charset=\"utf-8\"";
+
+			if(!empty($to)){
+				mail($to, $title, $mess, $header);
+			}
+
+			/////юзеру
+			$to = $orderEmail;
+
+			$title = "Вы сделали заказ на ".$nameSite;
+
+			$from='noreply@mygoodhouse2.fancymedia.ru';
+			$mess = "<body><b>Заказ с сайта </b>".$nameSite."<br />";
+			$mess .= "<br />";
+			$mess .= "<b>Данные заказа:</b><br /><br />";
+			$mess .= "Номер заказа: <br />" . $orderNumber . "<br /><br />";
+			if(isset($orderArticulProduct)) {
+				$mess .= "Артикул: <br />" . $orderArticulProduct . "<br /><br />";
+			}
+			$mess .= "Товар: <br />" . $orderNameProduct . "<br /><br />";
+			$mess .= "Цена: <br />" . $orderPriceProduct . "<br /><br />";
+			$mess .= "Количесвто: <br />" . $orderCount . "<br /><br />";
+			$mess .= "E-mail: <br />" . $orderEmail . "<br /><br />";
+			$mess .= "Телефон: <br />" . $orderPhone . "<br /><br />";
+			$mess .= "ФИО: <br />" . $orderNameCustomer . "<br /><br />";
+			$mess .= "Комментарий: <br />" . $orderComment . "<br /><br />";
+
+			$mess .= "Итого: <br />" . $orderTotals . "<br /><br />";
+
+			$header="Content-type: text/html; charset=\"utf-8\"\n";
+			$header="From: mygoodhouse<" . $from . ">\n";
+			$header.="Subject: " . $title . "\n";
+			$header.="Content-type: text/html; charset=\"utf-8\"";
+
+			if(!empty($to)){
+				mail($to, $title, $mess, $header);
 			}
 		}
 
-		$this->load->language('checkout/checkout');
+		print_r(json_encode($json));
 
-		$this->document->setTitle($this->language->get('heading_title'));
-
-		$this->document->addScript('catalog/view/javascript/jquery/datetimepicker/moment.js');
-		$this->document->addScript('catalog/view/javascript/jquery/datetimepicker/locale/'.$this->session->data['language'].'.js');
-		$this->document->addScript('catalog/view/javascript/jquery/datetimepicker/bootstrap-datetimepicker.min.js');
-		$this->document->addStyle('catalog/view/javascript/jquery/datetimepicker/bootstrap-datetimepicker.min.css');
-
-		// Required by klarna
-		if ($this->config->get('klarna_account') || $this->config->get('klarna_invoice')) {
-			$this->document->addScript('http://cdn.klarna.com/public/kitt/toc/v1.0/js/klarna.terms.min.js');
-		}
-
-		$data['breadcrumbs'] = array();
-
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_home'),
-			'href' => $this->url->link('common/home')
-		);
-
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_cart'),
-			'href' => $this->url->link('checkout/cart')
-		);
-
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('heading_title'),
-			'href' => $this->url->link('checkout/checkout', '', 'SSL')
-		);
-
-		$data['heading_title'] = $this->language->get('heading_title');
-
-		$data['text_checkout_option'] = $this->language->get('text_checkout_option');
-		$data['text_checkout_account'] = $this->language->get('text_checkout_account');
-		$data['text_checkout_payment_address'] = $this->language->get('text_checkout_payment_address');
-		$data['text_checkout_shipping_address'] = $this->language->get('text_checkout_shipping_address');
-		$data['text_checkout_shipping_method'] = $this->language->get('text_checkout_shipping_method');
-		$data['text_checkout_payment_method'] = $this->language->get('text_checkout_payment_method');
-		$data['text_checkout_confirm'] = $this->language->get('text_checkout_confirm');
-
-		if (isset($this->session->data['error'])) {
-			$data['error_warning'] = $this->session->data['error'];
-			unset($this->session->data['error']);
-		} else {
-			$data['error_warning'] = '';
-		}
-
-		$data['logged'] = $this->customer->isLogged();
-
-		if (isset($this->session->data['account'])) {
-			$data['account'] = $this->session->data['account'];
-		} else {
-			$data['account'] = '';
-		}
-
-		$data['shipping_required'] = $this->cart->hasShipping();
-
-		$data['column_left'] = $this->load->controller('common/column_left');
-		$data['column_right'] = $this->load->controller('common/column_right');
-		$data['content_top'] = $this->load->controller('common/content_top');
-		$data['content_bottom'] = $this->load->controller('common/content_bottom');
-		$data['footer'] = $this->load->controller('common/footer');
-		$data['header'] = $this->load->controller('common/header');
-
-		if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/checkout/checkout.tpl')) {
-			$this->response->setOutput($this->load->view($this->config->get('config_template') . '/template/checkout/checkout.tpl', $data));
-		} else {
-			$this->response->setOutput($this->load->view('default/template/checkout/checkout.tpl', $data));
-		}
 	}
 
 	public function country() {

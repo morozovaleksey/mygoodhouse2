@@ -22391,3 +22391,6 @@ ul.variant-option-values {
     background-color: #EFEFEF !important;
     color: #999999 !important;
 }
+.error {
+    border: 1px solid red;
+}

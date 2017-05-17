@@ -142,7 +142,7 @@
                   <div class="add-to-box">
                     <p>Заказать легко! Просто сообщите нам нужное количество, сроки и адрес доставки.</p>
                     <a class="btn btn-default" id="orderButton" href="#"><i class="fa fa-shopping-cart"></i>
-                      <span>Разместить заказ</span></a>
+                      <span>Заказать</span></a>
                     <a class="btn btn-default" href="javascript:void(0);" onclick="ZCallbackWidget.showCallback();return false;"><i class="fa fa-phone"></i>
                       <span>Консультация</span></a>
                     <!-- Button trigger modal -->
@@ -245,14 +245,23 @@
         <h4 class="modal-title" id="myModalLabel">Заказать</h4>
       </div>
       <div class="modal-body">
-        <form>
+        <form id="order-product-form">
+          <p class="success_message"></p>
           <div class="form-group">
-            <label >Название товара:</label>  <label ><?php echo $heading_title; ?></label>
+            <label >Название товара:</label>  <i ><?php echo $heading_title; ?></i>
             <input type="hidden" name="orderNameProduct" value="<?php echo $heading_title; ?>">
+            <input type="hidden" name="orderPriceProduct" value="<?php echo $price_number; ?>">
+            <input type="hidden" name="orderPriceProductEur" value="<?php echo $price_eur; ?>">
+            <input type="hidden" name="orderIdProduct" value="<?php echo $product_id; ?>">
+            <input type="hidden" name="orderCurrency" value="<?php echo $currency; ?>">
           </div>
           <div class="form-group">
-            <label >Артикул товара:</label>  <label ><?php echo $sku; ?></label>
+            <label >Артикул товара:</label>  <i><?php echo $sku; ?></i>
             <input type="hidden" name="orderArticulProduct" value="<?php echo $sku; ?>">
+          </div>
+          <div class="form-group">
+            <label >Количество:</label>
+            <input type="number" name="orderCount" class="form-control" value="1" id="">
           </div>
           <div class="form-group">
             <label >Имя:</label>
@@ -277,7 +286,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
-        <button type="button" class="btn btn-default">Заказать</button>
+        <button type="button" class="btn btn-default btn-order-product">Заказать</button>
       </div>
     </div>
   </div>

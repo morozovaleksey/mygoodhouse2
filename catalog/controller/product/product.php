@@ -355,11 +355,23 @@ class ControllerProductProduct extends Controller {
 			} else {
 				$data['price'] = false;
 			}
+
 			if (($this->config->get('config_customer_price') && $this->customer->isLogged()) || !$this->config->get('config_customer_price')) {
 				$data['price2'] = $this->currency->format($this->tax->calculate($product_info['price2'], $product_info['tax_class_id'], $this->config->get('config_tax')));
 			} else {
 				$data['price2'] = false;
 			}
+			$this->load->model('localisation/currency');
+			$results_currency = $this->model_localisation_currency->getCurrencies();
+			$results_currency = $results_currency['RUB'];
+			$data['currency'] = $results_currency['value'];
+
+			$data['price_number'] = ($this->tax->calculate($product_info['price'], $product_info['tax_class_id'], $this->config->get('config_tax'))) * $data['currency'];
+			$data['price_number'] = ($this->tax->calculate($product_info['price'], $product_info['tax_class_id'], $this->config->get('config_tax'))) * $data['currency'];
+			$data['price_number'] =  number_format($data['price_number'], 2, '.', '');
+			$data['price_number'] = round($data['price_number']);
+			$data['price_eur'] = $product_info['price'];
+			$data['price_eur'] =  number_format($product_info['price'], 2, '.', '');
 
 			if ((float)$product_info['special']) {
 				$data['special'] = $this->currency->format($this->tax->calculate($product_info['special'], $product_info['tax_class_id'], $this->config->get('config_tax')));
