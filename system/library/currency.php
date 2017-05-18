@@ -102,7 +102,8 @@ class Currency {
 		return $string;
 	}
 
-	public function format_with_out_symbol($number, $currency = 'RUB', $value = '', $format = true) {
+	public function format_RUB($number, $currency = 'RUB', $value = '1.00000000', $format = true) {
+
 		if ($currency && $this->has($currency)) {
 
 			$symbol_left   = $this->currencies[$currency]['symbol_left'];
@@ -113,6 +114,7 @@ class Currency {
 			$symbol_left   = $this->currencies[$this->code]['symbol_left'];
 			$symbol_right  = $this->currencies[$this->code]['symbol_right'];
 			$decimal_place = $this->currencies[$this->code]['decimal_place'];
+
 
 			$currency = $this->code;
 		}
@@ -149,6 +151,10 @@ class Currency {
 		}
 
 		$string .= number_format(round($value, (int)$decimal_place), (int)$decimal_place, $decimal_point, $thousand_point);
+
+		if (($symbol_right) && ($format)) {
+			$string .= $symbol_right;
+		}
 
 		return $string;
 	}

@@ -237,17 +237,31 @@ class ControllerProductCategory extends Controller {
 				} else {
 					$image = $this->model_tool_image->resize('placeholder.png', $this->config->get('config_image_product_width'), $this->config->get('config_image_product_height'));
 				}
+				if ($result['currency_code'] == 'RUB') {
+					if (($this->config->get('config_customer_price') && $this->customer->isLogged()) || !$this->config->get('config_customer_price')) {
+						$price = $this->currency->format_RUB($this->tax->calculate($result['price'], $result['tax_class_id'], $this->config->get('config_tax')));
+					} else {
+						$price = false;
+					}
+					if (($this->config->get('config_customer_price') && $this->customer->isLogged()) || !$this->config->get('config_customer_price')) {
+						$price2 = $this->currency->format_RUB($this->tax->calculate($result['price2'], $result['tax_class_id'], $this->config->get('config_tax')));
+					} else {
+						$price2 = false;
+					}
+				}
+				else {
+					if (($this->config->get('config_customer_price') && $this->customer->isLogged()) || !$this->config->get('config_customer_price')) {
+						$price = $this->currency->format($this->tax->calculate($result['price'], $result['tax_class_id'], $this->config->get('config_tax')));
+					} else {
+						$price = false;
+					}
+					if (($this->config->get('config_customer_price') && $this->customer->isLogged()) || !$this->config->get('config_customer_price')) {
+						$price2 = $this->currency->format($this->tax->calculate($result['price2'], $result['tax_class_id'], $this->config->get('config_tax')));
+					} else {
+						$price2 = false;
+					}
+				}
 
-				if (($this->config->get('config_customer_price') && $this->customer->isLogged()) || !$this->config->get('config_customer_price')) {
-					$price = $this->currency->format($this->tax->calculate($result['price'], $result['tax_class_id'], $this->config->get('config_tax')));
-				} else {
-					$price = false;
-				}
-				if (($this->config->get('config_customer_price') && $this->customer->isLogged()) || !$this->config->get('config_customer_price')) {
-					$price2 = $this->currency->format($this->tax->calculate($result['price2'], $result['tax_class_id'], $this->config->get('config_tax')));
-				} else {
-					$price2 = false;
-				}
 
 				if ((float)$result['special']) {
 					$special = $this->currency->format($this->tax->calculate($result['special'], $result['tax_class_id'], $this->config->get('config_tax')));

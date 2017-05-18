@@ -10,7 +10,11 @@ class ControllerCheckoutCheckout extends Controller {
 		$orderNameProduct = $_POST['orderNameProduct'];
 		$orderIdProduct = $_POST['orderIdProduct'];
 		$orderCount = $_POST['orderCount'];
-		$orderPriceProductEur = $_POST['orderPriceProductEur'];
+		if(isset($_POST['orderPriceProductEur'])) {
+			$orderPriceProductEur = $_POST['orderPriceProductEur'];
+			$orderPriceProductEur = filter($orderPriceProductEur);
+		}
+
 		$orderPriceProduct = $_POST['orderPriceProduct'];
 		$orderArticulProduct = $_POST['orderArticulProduct'];
 		$orderNameCustomer = $_POST['orderNameCustomer'];
@@ -24,7 +28,7 @@ class ControllerCheckoutCheckout extends Controller {
 		$orderCount = filter($orderCount);
 		$orderPriceProduct = filter($orderPriceProduct);
 
-		$orderPriceProductEur = filter($orderPriceProductEur);
+
 
 
 		$orderArticulProduct = filter($orderArticulProduct);
@@ -32,8 +36,13 @@ class ControllerCheckoutCheckout extends Controller {
 		$orderPhone = filter($orderPhone);
 		$orderEmail = filter($orderEmail);
 		$orderComment = filter($orderComment);
+		if(isset($orderPriceProductEur)) {
+			$orderTotals = $this->currency->format($orderPriceProductEur*$orderCount + ($this->config->get('config_tax') ? ($this->config->get('config_tax') * $orderCount) : 0), 'RUB',  $results_currency['RUB']['value']);
 
-		$orderTotals = $this->currency->format($orderPriceProductEur*$orderCount + ($this->config->get('config_tax') ? ($this->config->get('config_tax') * $orderCount) : 0), 'RUB',  $results_currency['RUB']['value']);
+		} else {
+			$orderTotals = $this->currency->format($orderPriceProduct*$orderCount + ($this->config->get('config_tax') ? ($this->config->get('config_tax') * $orderCount) : 0), 'RUB',1);
+
+		}
 
 
 		if ($orderCount < 1) {
@@ -139,19 +148,34 @@ class ControllerCheckoutCheckout extends Controller {
 
 			$order_data['products'] = array();
 
+			if(isset($orderPriceProductEur)) {
+				$order_data['products'][] = array(
+					'product_id' => $orderIdProduct,
+					'name' => $orderNameProduct,
+					'model' => $orderNameProduct,
+					'download' => '0',
+					'quantity' => $orderCount,
+					'subtract' => 1,
+					'price' => $orderPriceProductEur,
+					'total' => $orderPriceProductEur*$orderCount,
+					'tax' => '',
+					'reward' => ''
+				);
+			} else {
+				$order_data['products'][] = array(
+					'product_id' => $orderIdProduct,
+					'name' => $orderNameProduct,
+					'model' => $orderNameProduct,
+					'download' => '0',
+					'quantity' => $orderCount,
+					'subtract' => 1,
+					'price' => $orderPriceProduct,
+					'total' => $orderPriceProduct*$orderCount,
+					'tax' => '',
+					'reward' => ''
+				);
+			}
 
-			$order_data['products'][] = array(
-				'product_id' => $orderIdProduct,
-				'name' => $orderNameProduct,
-				'model' => $orderNameProduct,
-				'download' => '0',
-				'quantity' => $orderCount,
-				'subtract' => 1,
-				'price' => $orderPriceProductEur,
-				'total' => $orderPriceProductEur*$orderCount,
-				'tax' => '',
-				'reward' => ''
-			);
 
 
 			// Gift Voucher
@@ -174,7 +198,12 @@ class ControllerCheckoutCheckout extends Controller {
 			}
 
 			$order_data['comment'] = $orderComment;
-			$order_data['total'] = $orderPriceProductEur*$orderCount;
+			if(isset($orderPriceProductEur)) {
+				$order_data['total'] = $orderPriceProductEur*$orderCount;
+			} else {
+				$order_data['total'] = $orderPriceProduct*$orderCount;
+			}
+
 
 			if (isset($this->request->cookie['tracking'])) {
 				$order_data['tracking'] = $this->request->cookie['tracking'];
@@ -219,7 +248,12 @@ class ControllerCheckoutCheckout extends Controller {
 //
 			$order_data['currency_id'] = $results_currency['RUB']['currency_id'];
 			$order_data['currency_code'] = $results_currency['RUB']['code'];
-			$order_data['currency_value'] = $results_currency['RUB']['value'];
+			if(isset($orderPriceProductEur)) {
+				$order_data['currency_value'] = $results_currency['RUB']['value'];
+			} else {
+				$order_data['currency_value'] = 1;
+			}
+
 
 			$order_data['ip'] = $this->request->server['REMOTE_ADDR'];
 
@@ -246,7 +280,7 @@ class ControllerCheckoutCheckout extends Controller {
 
 
 			$orderNumber = $this->model_checkout_order->addOrder($order_data);
-			$json['success'] = 'Ваше сообщение успешно отправлено!';
+			$json['success'] = 'Ваше сообщение о заказе успешно отправлено!';
 			//		print_r($_POST);
 			$to = "moraleksey.ya@yandex.ru";
 			$nameSite = $_SERVER['HTTP_HOST'];

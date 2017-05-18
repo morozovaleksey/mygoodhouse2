@@ -937,7 +937,16 @@ class ControllerCatalogProduct extends Controller {
 		} else {
 			$data['keyword'] = '';
 		}
-
+		$this->load->model('localisation/currency');
+		$results_currency = $this->model_localisation_currency->getCurrencies();
+		$data['results_currency'] = $results_currency;
+		if (isset($this->request->post['currency_code'])) {
+			$data['currency_code'] = $this->request->post['currency_code'];
+		} elseif (!empty($product_info)) {
+			$data['currency_code'] = $product_info['currency_code'];
+		} else {
+			$data['currency_code'] = '';
+		}
 		if (isset($this->request->post['shipping'])) {
 			$data['shipping'] = $this->request->post['shipping'];
 		} elseif (!empty($product_info)) {

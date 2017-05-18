@@ -251,7 +251,9 @@
             <label >Название товара:</label>  <i ><?php echo $heading_title; ?></i>
             <input type="hidden" name="orderNameProduct" value="<?php echo $heading_title; ?>">
             <input type="hidden" name="orderPriceProduct" value="<?php echo $price_number; ?>">
+            <?php if(isset($price_eur)) { ?>
             <input type="hidden" name="orderPriceProductEur" value="<?php echo $price_eur; ?>">
+            <?php } ?>
             <input type="hidden" name="orderIdProduct" value="<?php echo $product_id; ?>">
             <input type="hidden" name="orderCurrency" value="<?php echo $currency; ?>">
           </div>

@@ -19,6 +19,7 @@ class ModelCatalogProduct extends Model {
 				'meta_keyword'     => $query->row['meta_keyword'],
 				'tag'              => $query->row['tag'],
 				'model'            => $query->row['model'],
+				'currency_code'    => $query->row['currency_code'],
 				'sku'              => $query->row['sku'],
 				'upc'              => $query->row['upc'],
 				'ean'              => $query->row['ean'],

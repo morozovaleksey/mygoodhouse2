@@ -178,6 +178,26 @@
                 </div>
               </div>
               <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-price2">Валюта</label>
+                <div class="col-sm-10">
+                  <select name="currency_code" id="input-currency-code" class="form-control">
+
+                    <?php
+                      foreach($results_currency as $key=> $currency) {
+                        if($key == $currency_code) {
+
+                    ?>
+                    <option value="<?php echo $currency_code ?>" selected="selected"><?php echo $currency_code;?></option>
+                    <?php } else {?>
+                      <option value="<?php echo $key; ?>"><?php echo $key; ?></option>
+                    <?php } }?>
+
+
+
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
                 <label class="col-sm-2 control-label" for="input-tax-class"><?php echo $entry_tax_class; ?></label>
                 <div class="col-sm-10">
                   <select name="tax_class_id" id="input-tax-class" class="form-control">
