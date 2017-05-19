@@ -222,6 +222,27 @@
                   <!-- End Comments -->
                 </div>
               </div>
+              <h3>Смотрите также</h3>
+              <div class="form-quotation">
+                <div id="tg-vehicletype-slider-related-products" class="tg-vehicletype-slider owl-carousel owl-theme">
+                    <?php foreach ($related_products as $key=>$related_product) { ?>
+                      <div class="item tg-vehicle-type brand-filter">
+                        <a href="<?php echo $related_product['href']; ?>">
+                          <img src="<?php echo $related_product['thumb']; ?>">
+                          <label for=" ">
+                            <span><?php echo $related_product['name']; ?></span>
+
+                          </label>
+                        </a>
+
+
+                      </div>
+                    <?php } ?>
+
+
+
+                </div>
+              </div>
             </div>
             <!--Sidebar End-->
             <div class="col-md-3 col-md-pull-9 hidden-xs hidden-sm">

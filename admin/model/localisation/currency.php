@@ -100,8 +100,113 @@ class ModelLocalisationCurrency extends Model {
 			return $currency_data;
 		}
 	}
+	public function CheckHttpStatus($url) {
+		$user_agent = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0)';
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_VERBOSE, false);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSLVERSION, 3);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+		$page = curl_exec($ch);
+
+		$err = curl_error($ch);
+		if (!empty($err)) return $err;
+
+		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+		return $httpcode;
+	}
 
 	public function refresh($force = false) {
+
+		if (extension_loaded('curl')) {
+
+			$data = array();
+
+			if ($force) {
+				$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "currency WHERE code != '" . $this->db->escape($this->config->get('config_currency')) . "'");
+			} else {
+				$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "currency WHERE code != '" . $this->db->escape($this->config->get('config_currency')) . "' AND date_modified < '" .  $this->db->escape(date('Y-m-d H:i:s', strtotime('-1 day'))) . "'");
+			}
+
+			$query = $this->db->query("SELECT date_modified FROM " . DB_PREFIX . "currency WHERE code != '" . $this->db->escape($this->config->get('config_currency')) . "'");
+			$cc_value = $this->db->query("SELECT value FROM " . DB_PREFIX . "currency WHERE code = '" . $this->db->escape($this->config->get('config_currency')) . "'");
+			$i = 0;
+			foreach ($query->rows as $mdate) {
+				if($this->db->escape(date('Y-m-d',strtotime($mdate['date_modified']))) < $this->db->escape(date('Y-m-d', strtotime('now')))) $i++;
+			}
+			$manual_update = isset($this->request->post['manual_update']) ? $this->request->post['manual_update'] : false;
+
+			if ($i || $cc_value->row['value'] != 1.00000 || $manual_update)	{
+
+				$url = 'http://www.cbr.ru/scripts/XML_daily.asp';
+				$answer = $this->CheckHttpStatus($url);
+				if ($answer != 200) {
+                    echo '<script type="text/javascript" charset="utf-8">
+                    alert("Не удалось загрузить файл курсов валют с сайта ЦБРФ! Код статуса ответа сервера: '.$answer.'. URL: '.$url.' . Возможны временные сбои на сервере, попробуйте обновить курсы позже.");
+                    </script>';
+
+				} else {
+
+					$ch = curl_init();
+					curl_setopt($ch, CURLOPT_URL, 'http://www.cbr.ru/scripts/XML_daily.asp');
+					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+					$content = curl_exec($ch);
+					curl_close($ch);
+
+					$doc = new DOMDocument();
+					$doc->loadXML($content);
+					$valute = $doc->getElementsByTagName("Valute");
+					$cur_val = $this->config->get('config_currency') == 'RUB' ? 'RUB' : $this->config->get('config_currency');
+
+					$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "currency WHERE code != '" . $this->db->escape($this->config->get('config_currency')) . "'");
+
+					$ret = array();
+					foreach( $valute as $value )
+					{
+						$icn = $value->childNodes;
+						$code = $icn->item(3)->nodeValue;
+						$nom = intval($icn->item(5)->nodeValue);
+						$value = floatval(str_replace(",", "." , $icn->item(9)->nodeValue));
+						$ret[$code] = ($value/$nom);
+					}
+
+					if ($cur_val != 'RUB') {
+
+						foreach ($query->rows as $result) {
+							if($result['code'] == 'RUB') {
+								$value = $ret[$cur_val];
+								if ((float)$value) {
+									$this->db->query("UPDATE " . DB_PREFIX . "currency SET value = '" . (float)$value . "', date_modified = NOW() WHERE code = 'RUB'");
+								}
+							} else {
+								$value = $ret[$result['code']];
+
+								if ((float)$value) {
+
+									$val = (float)$ret[$cur_val] / (float)$value;
+									$this->db->query("UPDATE " . DB_PREFIX . "currency SET value = '" . $val . "', date_modified = NOW() WHERE code = '" . $this->db->escape($result['code']) . "'");
+								}
+							}
+						}
+					}
+				}
+
+			}
+
+			$this->db->query("UPDATE " . DB_PREFIX . "currency SET value = '1.00000', date_modified = '" .  $this->db->escape(date('Y-m-d H:i:s')) . "' WHERE code = '" . $this->db->escape($this->config->get('config_currency')) . "'");
+
+			$this->cache->delete('currency');
+
+		}
+	}
+
+	public function refresh_old($force = false) {
+
 		if (extension_loaded('curl')) {
 			$data = array();
 
@@ -130,6 +235,7 @@ class ModelLocalisationCurrency extends Model {
 			$lines = explode("\n", trim($content));
 
 			foreach ($lines as $line) {
+
 				$currency = utf8_substr($line, 4, 3);
 				$value = utf8_substr($line, 11, 6);
 

@@ -577,6 +577,29 @@ class ControllerProductProduct extends Controller {
 			$data['category_info_product'] = $category_info_product;
 			$data['category_href']    = $this->url->link('product/category', 'path=' . $currentCat['category_id']);
 
+
+			$filter_data_related_products = array(
+				'filter_category_id' => $currentCat['category_id'],
+				'filter_filter'      => '',
+				'sort'               => 'RAND()',
+				'order'              => '',
+				'start'              => '',
+				'limit'              => 10
+			);
+
+			$data['related_products'] = array();
+			$related_products = $this->model_catalog_product->getProductsRelated($filter_data_related_products);
+
+			foreach($related_products as $related_product ) {
+				$data['related_products'][] = array(
+					'product_id'  => $related_product['product_id'],
+					'thumb'       => $this->model_tool_image->resize($related_product['image'], 170, 70),
+					'name'        => $related_product['name'],
+					'date_available'     => date($this->language->get('date_format_short'), strtotime($related_product['date_available'])),
+					'href'        => $this->url->link('product/product', 'path=' . $this->request->get['path'] . '&product_id=' . $related_product['product_id'])
+				);
+		}
+
 			if($category_id == 92 or $category_info['parent_id']==92) {
 				if ($product_info['image']) {
 					$data['thumb'] = $this->model_tool_image->resize($product_info['image'], 840, 472);

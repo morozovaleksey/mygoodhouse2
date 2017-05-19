@@ -175,6 +175,17 @@ $(document).ready(function () {
         navigationText: ['<i class="fa fa-angle-right"></i>', '<i class="fa fa-angle-left"></i>'],
         items: 5
     });
+    $('#tg-vehicletype-slider-related-products').owlCarousel({
+        autoPlay: true,
+        pagination: false,
+        navigation: true,
+        stopOnHover: true,
+        responsive: true,
+        responsiveRefreshRate: 2000,
+        slideSpeed: 400,
+        navigationText: ['<i class="fa fa-angle-right"></i>', '<i class="fa fa-angle-left"></i>'],
+        items: 5
+    });
     /* Countdown */
     $('.countdown').each(function () {
         var year = $(this).attr('data-year');
