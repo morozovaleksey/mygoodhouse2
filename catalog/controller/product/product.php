@@ -377,6 +377,7 @@ class ControllerProductProduct extends Controller {
 				}
 			}
 
+
 			$this->load->model('localisation/currency');
 			$results_currency = $this->model_localisation_currency->getCurrencies();
 			$results_currency = $results_currency['RUB'];
@@ -390,15 +391,41 @@ class ControllerProductProduct extends Controller {
 			$data['price_number'] =  number_format($data['price_number'], 2, '.', '');
 			$data['price_number'] = round($data['price_number']);
 
+
+
 			if ($product_info['currency_code'] != 'RUB') {
 				$data['price_eur'] = $product_info['price'];
 				$data['price_eur'] = number_format($product_info['price'], 2, '.', '');
 			}
+			if ($product_info['currency_code'] == 'RUB') {
+				if ((float)$product_info['special']) {
+					$data['special'] = $this->currency->format_RUB($this->tax->calculate($product_info['special'], $product_info['tax_class_id'], $this->config->get('config_tax')));
+					$data['special'] = $this->currency->format_RUB($this->tax->calculate($product_info['special'], $product_info['tax_class_id'], $this->config->get('config_tax')));
+					if ($product_info['currency_code'] == 'RUB') {
+						$data['price_number_special'] = ($this->tax->calculate($product_info['special'], $product_info['tax_class_id'], $this->config->get('config_tax')));
+					} else {
+						$data['price_number_special'] = ($this->tax->calculate($product_info['special'], $product_info['tax_class_id'], $this->config->get('config_tax'))) * $data['currency'];
+					}
 
-			if ((float)$product_info['special']) {
-				$data['special'] = $this->currency->format($this->tax->calculate($product_info['special'], $product_info['tax_class_id'], $this->config->get('config_tax')));
+					$data['price_number_special'] =  number_format($data['price_number_special'], 2, '.', '');
+					$data['price_number_special'] = round($data['price_number_special']);
+				} else {
+					$data['special'] = false;
+				}
 			} else {
-				$data['special'] = false;
+				if ((float)$product_info['special']) {
+					$data['special'] = $this->currency->format_RUB($this->tax->calculate($product_info['special'], $product_info['tax_class_id'], $this->config->get('config_tax')));
+					if ($product_info['currency_code'] == 'RUB') {
+						$data['price_number_special'] = ($this->tax->calculate($product_info['special'], $product_info['tax_class_id'], $this->config->get('config_tax')));
+					} else {
+						$data['price_number_special'] = ($this->tax->calculate($product_info['special'], $product_info['tax_class_id'], $this->config->get('config_tax'))) * $data['currency'];
+					}
+
+					$data['price_number_special'] =  number_format($data['price_number_special'], 2, '.', '');
+					$data['price_number_special'] = round($data['price_number_special']);
+				} else {
+					$data['special'] = false;
+				}
 			}
 
 			if ($this->config->get('config_tax')) {

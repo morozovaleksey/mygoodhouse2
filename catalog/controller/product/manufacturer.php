@@ -1,6 +1,7 @@
 <?php
 class ControllerProductManufacturer extends Controller {
 	public function index() {
+
 		$this->load->language('product/manufacturer');
 
 		$this->load->model('catalog/manufacturer');
@@ -31,6 +32,8 @@ class ControllerProductManufacturer extends Controller {
 		$data['categories'] = array();
 
 		$results = $this->model_catalog_manufacturer->getManufacturers();
+
+
 
 		foreach ($results as $result) {
 			$name = $result['name'];
@@ -71,6 +74,8 @@ class ControllerProductManufacturer extends Controller {
 		$this->load->language('product/manufacturer');
 
 		$this->load->model('catalog/manufacturer');
+
+		$this->load->model('catalog/certificate');
 
 		$this->load->model('catalog/product');
 
@@ -119,6 +124,10 @@ class ControllerProductManufacturer extends Controller {
 		);
 
 		$manufacturer_info = $this->model_catalog_manufacturer->getManufacturer($manufacturer_id);
+
+		$results_certificates = $this->model_catalog_certificate->getCertificateByManufacturer($manufacturer_id);
+		$data['results_certificates'] = $results_certificates;
+
 
 		if ($manufacturer_info) {
 			$this->document->setTitle($manufacturer_info['name']);
@@ -350,6 +359,8 @@ class ControllerProductManufacturer extends Controller {
 			if (isset($this->request->get['limit'])) {
 				$url .= '&limit=' . $this->request->get['limit'];
 			}
+
+
 
 			$pagination = new Pagination();
 			$pagination->total = $product_total;

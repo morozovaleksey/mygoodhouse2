@@ -113,8 +113,11 @@
                               <small>Цена за кв.м.:</small>
                             </h3>
                             <div>
-                              <span class="lead price selling special-price" itemprop="price">
+                              <span class="lead price selling special-price" itemprop="price" style="<?php if($special) { echo 'text-decoration: line-through';} ?>">
                                 <?php if($price == '0 р.') { echo 'Под заказ'; } else { echo $price; } ?>
+                              </span>
+                              <span class="lead price selling special-price" itemprop="price">
+                                <?php if($special) {echo $special;} ?>
                               </span>
 
                               <span itemprop="priceCurrency" content="RUB"></span>
@@ -271,7 +274,11 @@
           <div class="form-group">
             <label >Название товара:</label>  <i ><?php echo $heading_title; ?></i>
             <input type="hidden" name="orderNameProduct" value="<?php echo $heading_title; ?>">
+            <?php if($special){ ?>
+            <input type="hidden" name="orderPriceProduct" value="<?php echo $price_number_special; ?>">
+            <?php } else { ?>
             <input type="hidden" name="orderPriceProduct" value="<?php echo $price_number; ?>">
+            <?php } ?>
             <?php if(isset($price_eur)) { ?>
             <input type="hidden" name="orderPriceProductEur" value="<?php echo $price_eur; ?>">
             <?php } ?>

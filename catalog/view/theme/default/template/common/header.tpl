@@ -169,6 +169,7 @@
                         </li>
 
                         <li><a href="/#contacts">Контакты</a></li>
+                        <li><a href="/brands">Сертификаты</a></li>
 
                         <li>
                             <a href="#" class="parents">Конфигураторы материалов</a>
