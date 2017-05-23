@@ -37,7 +37,7 @@
 				<ul class="nav nav-tabs">
 					<li class="active"><a href="#tab-export" data-toggle="tab"><?php echo $tab_export; ?></a></li>
 					<li><a href="#tab-import" data-toggle="tab"><?php echo $tab_import; ?></a></li>
-					<li><a href="#tab-settings" data-toggle="tab"><?php echo $tab_settings; ?></a></li>
+<!--					<li><a href="#tab-settings" data-toggle="tab">--><?php //echo $tab_settings; ?><!--</a></li>-->
 				</ul>
 
 				<div class="tab-content">
@@ -99,7 +99,7 @@
 								</tr>
 
 								<tr id="range_type">
-									<td style="vertical-align:top;"><?php echo $entry_range_type; ?><span class="help"><?php echo $help_range_type; ?></span><br />
+									<td style="vertical-align:top; display: none;"><?php echo $entry_range_type; ?><span class="help"><?php echo $help_range_type; ?></span><br />
 										<input type="radio" name="range_type" value="id" id="range_type_id"><?php echo $button_export_id; ?> &nbsp;&nbsp;
 										<input type="radio" name="range_type" value="page" id="range_type_page"><?php echo $button_export_page; ?>
 										<br /><br />

@@ -998,11 +998,13 @@ class ModelToolExportImport extends Model {
 		$this->load->model('catalog/product');
 		$names = $product['names'];
 
-		$main_category = $product['main_category']; //added
+//		$main_category = $product['main_category']; //added
 
 		$image = $this->db->escape($product['image']);
+		$currency_code = $this->db->escape($product['currency_code']);
 
 		$price = trim($product['price']);
+		$price2 = trim($product['price2']);
 
 		$sku = $this->db->escape($product['sku']);
 		foreach ($languages as $language) {
@@ -1019,21 +1021,24 @@ class ModelToolExportImport extends Model {
 			$product_id = $product_info['product_id'];
 
 
-			$this->db->query("UPDATE " . DB_PREFIX . "product SET model = '" . $this->db->escape($model) . "', image = '" . $this->db->escape($image) . "', price = '" . (float)($price) . "' WHERE product_id = '" . (int)$product_id . "'");
+			$this->db->query("UPDATE " . DB_PREFIX . "product SET model = '" . $this->db->escape($model) . "', image = '" . $this->db->escape($image) . "', currency_code = '" . $this->db->escape($currency_code) . "', price2 = '" . (float)($price2) . "', price = '" . (float)($price) . "' WHERE product_id = '" . (int)$product_id . "'");
 
 			$this->db->query("UPDATE " . DB_PREFIX . "product_description SET language_id = '1', name = '" . $this->db->escape($name) . "' WHERE product_id = '" . (int)$product_id . "'");
-			$query  = $this->db->query("SELECT DISTINCT * FROM " . DB_PREFIX . "product_to_category WHERE product_id = '" . (int)$product_id . "' AND main_category = '1'");
-			$product_to_category = $query->rows;
-			$product_to_category_id = $product_to_category[0]['category_id'];
+//			$query  = $this->db->query("SELECT DISTINCT * FROM " . DB_PREFIX . "product_to_category WHERE product_id = '" . (int)$product_id . "' AND main_category = '1'");
+//			$product_to_category = $query->rows;
+//			$product_to_category_id = $product_to_category[0]['category_id'];
+
+
 //			if($product_to_category_id != $main_category) {
 //				$this->db->query("UPDATE " . DB_PREFIX . "product_to_category SET category_id = '" . (int)$main_category . "', main_category = '1' WHERE product_id = '" . (int)$product_id . "'");
 //			}
 
 		} else {
-			$this->db->query("INSERT INTO " . DB_PREFIX . "product SET sku = '" . $this->db->escape($sku) . "', model = '" . $this->db->escape($model) . "', image = '" . $this->db->escape($image) . "', price = '" . (float)($price) . "'");
+
+			$this->db->query("INSERT INTO " . DB_PREFIX . "product SET sku = '" . $this->db->escape($sku) . "', model = '" . $this->db->escape($model) . "', image = '" . $this->db->escape($image) . "', currency_code = '" . $this->db->escape($currency_code) . "', price2 = '" . (float)($price2) . "', price = '" . (float)($price) . "'");
 			$product_id = $this->db->getLastId();
 			$this->db->query("INSERT INTO " . DB_PREFIX . "product_description SET product_id = '" . (int)$product_id . "', language_id = '1', name = '" . $this->db->escape($name) . "'");
-			$this->db->query("INSERT INTO " . DB_PREFIX . "product_to_category SET product_id = '" . (int)$product_id . "', category_id = '" . (int)$main_category . "', main_category = '1'");
+			$this->db->query("INSERT INTO " . DB_PREFIX . "product_to_category SET product_id = '" . (int)$product_id . "', category_id = '95', main_category = '1'");
 
 		}
 
@@ -1175,6 +1180,7 @@ class ModelToolExportImport extends Model {
 			$image_name = $this->getCell($data,$i,$j++);
 
 			$price = $this->getCell($data,$i,$j++,'0.00');
+			$price2 = $this->getCell($data,$i,$j++,'0.00');
 
 			$currency_code = $this->getCell($data,$i,$j++);
 
@@ -1187,6 +1193,7 @@ class ModelToolExportImport extends Model {
 			$product['image'] = $image_name;
 
 			$product['price'] = $price;
+			$product['price2'] = $price2;
 
 			$product['currency_code'] = $currency_code;
 
@@ -6039,10 +6046,10 @@ class ModelToolExportImport extends Model {
 			$worksheet->getColumnDimensionByColumn($j++)->setWidth(max(strlen('name')+4,30)+1);
 		}
 
-		$worksheet->getColumnDimensionByColumn($j++)->setWidth(max(strlen('main_category'),4)+1); //added
 		$worksheet->getColumnDimensionByColumn($j++)->setWidth(max(strlen('sku'),10)+1);
 		$worksheet->getColumnDimensionByColumn($j++)->setWidth(max(strlen('image_name'),12)+1);
 		$worksheet->getColumnDimensionByColumn($j++)->setWidth(max(strlen('price'),10)+1);
+		$worksheet->getColumnDimensionByColumn($j++)->setWidth(max(strlen('price2'),10)+1);
 		$worksheet->getColumnDimensionByColumn($j++)->setWidth(max(strlen('currency_code'),10)+1);
 
 		// The product headings row and column styles
@@ -6055,9 +6062,9 @@ class ModelToolExportImport extends Model {
 			$styles[$j] = &$text_format;
 			$data[$j++] = 'name('.$language['code'].')';
 		}
-		$styles[$j] = &$text_format;
 
-		$data[$j++] = 'main_category'; //added
+
+
 		$styles[$j] = &$text_format;
 		$data[$j++] = 'sku';
 
@@ -6065,6 +6072,9 @@ class ModelToolExportImport extends Model {
 		$data[$j++] = 'image_name';
 		$styles[$j] = &$price_format;
 		$data[$j++] = 'price';
+
+		$styles[$j] = &$price_format;
+		$data[$j++] = 'price2';
 
 		$styles[$j] = &$text_format;
 		$data[$j++] = 'currency_code';
@@ -6092,10 +6102,11 @@ class ModelToolExportImport extends Model {
 					$data[$j++] = html_entity_decode($row['name'][$language['code']],ENT_QUOTES,'UTF-8');
 				}
 
-				$data[$j++] = $main_category; //added
+
 				$data[$j++] = $row['sku'];
 				$data[$j++] = $row['image_name'];
 				$data[$j++] = $row['price'];
+				$data[$j++] = $row['price2'];
 				$data[$j++] = $row['currency_code'];
 
 

@@ -37,7 +37,7 @@ class ControllerProductManufacturer extends Controller {
 
 		foreach ($results as $result) {
 			$name = $result['name'];
-
+			$image = $result['image'];
 			if (is_numeric(utf8_substr($name, 0, 1))) {
 				$key = '0 - 9';
 			} else {
@@ -50,6 +50,7 @@ class ControllerProductManufacturer extends Controller {
 
 			$data['categories'][$key]['manufacturer'][] = array(
 				'name' => $name,
+				'thumb'=> $this->model_tool_image->resize($image, 170, 70),
 				'href' => $this->url->link('product/manufacturer/info', 'manufacturer_id=' . $result['manufacturer_id'])
 			);
 		}

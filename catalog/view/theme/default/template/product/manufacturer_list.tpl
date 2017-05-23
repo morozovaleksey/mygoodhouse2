@@ -4,7 +4,7 @@
 
 <?php echo $header; ?>
 
-<div class="inside_title image_bck bordered_wht_border white_txt" data-image="/image/<?php echo $back_thumb; ?>">
+<div class="inside_title image_bck bordered_wht_border white_txt" data-image="/image/catalog/categories/back/fff.jpg">
   <!-- Over -->
   <div class="over" data-opacity="0.5" data-color="#000"></div>
   <div class="container">
@@ -57,11 +57,32 @@
                   <?php foreach ($categories as $category) { ?>
                     <h2 id="<?php echo $category['name']; ?>"><?php echo $category['name']; ?></h2>
                     <?php if ($category['manufacturer']) { ?>
-                      <?php foreach (array_chunk($category['manufacturer'], 4) as $manufacturers) { ?>
+
+                      <?php foreach (array_chunk($category['manufacturer'], 5) as $manufacturers) { ?>
                         <div class="row">
-                          <?php foreach ($manufacturers as $manufacturer) { ?>
-                            <div class="col-sm-3"><a href="<?php echo $manufacturer['href']; ?>"><?php echo $manufacturer['name']; ?></a></div>
-                          <?php } ?>
+                          <div class="form-quotation">
+                            <div id="" class="tg-vehicletype-slider owl-carousel owl-theme tg-vehicletype-slider-related-products">
+                              <?php
+
+                              foreach ($manufacturers as $manufacturer) {
+                                ?>
+<!--                                <div class="col-sm-3"><a href="--><?php //echo $manufacturer['href']; ?><!--">--><?php //echo $manufacturer['name']; ?><!--</a></div>-->
+                                <div class="item tg-vehicle-type brand-filter">
+                                  <a href="<?php echo $manufacturer['href']; ?>">
+                                    <img src="<?php echo $manufacturer['thumb']; ?>">
+                                    <label for=" ">
+                                      <span><?php echo $manufacturer['name']; ?></span>
+
+                                    </label>
+                                  </a>
+
+
+                                </div>
+                              <?php } ?>
+
+                            </div>
+                          </div>
+
                         </div>
                       <?php } ?>
                     <?php } ?>

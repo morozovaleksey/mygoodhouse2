@@ -3,7 +3,7 @@
 
 <?php echo $header; ?>
 
-<div class="inside_title image_bck bordered_wht_border white_txt" data-image="/image/<?php echo $back_thumb; ?>">
+<div class="inside_title image_bck bordered_wht_border white_txt" data-image="/image/catalog/categories/back/fff.jpg">
   <!-- Over -->
   <div class="over" data-opacity="0.5" data-color="#000"></div>
   <div class="container">
